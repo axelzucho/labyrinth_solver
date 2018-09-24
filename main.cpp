@@ -40,7 +40,7 @@ public:
 
 
     Labyrinth(){
-        scanf("%d %d %d %d %d %d ", &size_y, &size_x, &start_y, &start_x,
+        scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
               &end_x, &end_y);
         map = new bool *[size_y];
         map[0] = new bool[size_y * size_x];
