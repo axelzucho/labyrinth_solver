@@ -126,5 +126,5 @@ int main() {
     std::cout << solution << "\n";
     std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
-    std::cout << "Time is: " << duration << "ms" << "\n";
+    std::cout << "Time is: " << duration << "us" << "\n";
 }
