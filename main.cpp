@@ -35,7 +35,7 @@ public:
     int end_x;
     int end_y;
     bool ** map;
-    std::set<std::pair<int,int>> visited;
+    std::set<std::pair<int,int> > visited;
     NodeQueue node_queue;
 
 
