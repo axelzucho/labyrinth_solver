@@ -7,6 +7,8 @@
 #include <tuple>
 #include <chrono>
 
+#define MAX_SIZE 1500
+
 using std::string;
 using std::pair;
 
@@ -34,7 +36,7 @@ public:
     int start_x;
     int end_x;
     int end_y;
-    bool ** map;
+    bool map[MAX_SIZE][MAX_SIZE]; // Space allocated in compile time to save time in run time.
     std::set<std::pair<int,int> > visited;
     NodeQueue node_queue;
 
@@ -42,11 +44,6 @@ public:
     Labyrinth(){
         scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
               &end_x, &end_y);
-        map = new bool *[size_y];
-        map[0] = new bool[size_y * size_x];
-        for (int i = 1; i < size_x; ++i) {
-            map[i] = map[0] + i * size_y;
-        }
         for (int i = size_y - 1; i >= 0; --i) {
             for (int j = 0; j < size_x; ++j) {
                 char cell_char;
@@ -55,9 +52,11 @@ public:
                 else map[i][j] = false;
             }
         }
-        std::pair<int,int> start(start_y,start_x);
-        node_queue.emplace(start, GetDistance(start_y, start_x), "");
-        visited.emplace(start);
+        if(!map[start_y][start_x]) {
+            std::pair<int,int> start(start_y,start_x);
+            node_queue.emplace(start, GetDistance(start_y, start_x), "");
+            visited.emplace(start);
+        }
     }
 
     int GetDistance(int& y, int& x){
@@ -72,11 +71,6 @@ public:
             }
             printf("\n");
         }
-    }
-
-    ~Labyrinth(){
-        delete(map[0]);
-        delete[] (map);
     }
 
     string Solve(){
@@ -121,7 +115,7 @@ public:
 int main() {
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     Labyrinth labyrinth;
-    labyrinth.PrintLabyrinth();
+    //labyrinth.PrintLabyrinth();
     string solution = labyrinth.Solve();
     std::cout << solution << "\n";
     std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
