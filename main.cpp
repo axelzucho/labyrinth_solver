@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string>
 #include <tuple>
+#include <chrono>
 
 using std::string;
 using std::pair;
@@ -66,7 +67,8 @@ public:
     void PrintLabyrinth(){
         for(int i = size_y - 1; i >= 0; --i){
             for(int j = 0; j < size_x; ++j){
-                printf("%c ", map[i][j]);
+                char c = map[i][j] ? '1' : '0';
+                printf("%c ", c);
             }
             printf("\n");
         }
@@ -117,8 +119,12 @@ public:
 };
 
 int main() {
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     Labyrinth labyrinth;
     labyrinth.PrintLabyrinth();
     string solution = labyrinth.Solve();
     std::cout << solution << "\n";
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    std::cout << "Time is: " << duration << "ms" << "\n";
 }
