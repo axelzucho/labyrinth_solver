@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <set>
 #include <queue>
-#include <math.h>
 #include <string>
 #include <tuple>
 #include <chrono>
@@ -60,7 +59,7 @@ public:
     }
 
     int GetDistance(int& y, int& x){
-        return abs(y - end_y) + abs(x - end_x);
+        return y < end_y ? end_y - y : y - end_y + x < end_x ? end_x - x : x - end_x;
     }
 
     void PrintLabyrinth(){
