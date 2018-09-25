@@ -5,24 +5,38 @@
 #include <string>
 #include <tuple>
 #include <chrono>
+#include <bitset>
+
+#define MAX_SIZE 50
+#define DOWN_POS 0
+#define UP_POS 1
+#define RIGHT_POS 2
+#define LEFT_POS 3
+
+char letters[4] = {'D', 'U', 'R', 'L'};
 
 using std::string;
 using std::pair;
+using std::bitset;
 
+typedef std::priority_queue<Node, std::vector<Node>, OrderByWeight> NodeQueue;
+typedef std::vector<bitset<MAX_SIZE>> bitset_vector;
+j
 class Node{
 public:
     std::pair<int,int> pos;
     int weight;
-    string route;
-    Node(const int y, const int x, const int w, string d): pos(std::make_pair(y,x)), weight(w), route(d){}
-    Node(const pair<int,int> p, const int w, string d): pos(p), weight(w), route(d){}
+    int step_number;
+    int current_index;
+    bitset_vector route;
+    Node(const int y, const int x, const int w, bitset_vector d, const int steps, const int index): pos(std::make_pair(y,x)), weight(w), route(d), step_number(steps), current_index(index){}
+    Node(const pair<int,int> p, const int w, bitset_vector d, const int steps, const int index): pos(p), weight(w), route(d), step_number(steps), current_index(index){}
 };
 
 struct OrderByWeight{
     bool operator() (const Node& a, const Node& b) { return a.weight < b.weight; }
 };
 
-typedef std::priority_queue<Node, std::vector<Node>, OrderByWeight> NodeQueue;
 
 
 class Labyrinth {
@@ -52,7 +66,10 @@ public:
         }
         if(!map[start_y][start_x]) {
             std::pair<int,int> start(start_y,start_x);
-            node_queue.emplace(start, GetDistance(start_y, start_x), "");
+            bitset<MAX_SIZE> any;
+            bitset_vector bv;
+            bv.push_back(any);
+            node_queue.emplace(start, GetDistance(start_y, start_x), bv, 0);
             visited.emplace(start);
         }
     }
@@ -83,10 +100,18 @@ public:
         while (!node_queue.empty()){
             Node current = node_queue.top();
             node_queue.pop();
-            if(current.weight == 0) return current.route;
+            if(current.weight == 0) return DecodeRoute(current);
             AddNeighborsToQueue(current);
         }
         return "-";
+    }
+
+    string DecodeRoute(const Node& node){
+        string result = "";
+        for(int i = node.step_number*2 - 1; i >= 0; i-=2){
+            result += letters[node.route[i]*2 + node.route[i-1]];
+        }
+        return result;
     }
 
     void AddNeighborsToQueue(const Node& node){
@@ -96,9 +121,23 @@ public:
                 if (visited.find(down_position) == visited.end()) {
                     visited.emplace(down_position);
                     int new_weight = node.weight;
+                    int new_index = node.current_index;
+                    bitset_vector new_route(node.route);
+                    int steps = node.step_number;
+                    if(steps > MAX_SIZE){
+                        bitset<MAX_SIZE> new_bitset;
+                        ++new_index;
+                        new_route.push_back(new_bitset);
+                        steps = 0;
+                    }
+                    else{
+                        ++steps;
+                    }
+                    new_route[new_index] <<= 2;
+                    new_route[new_index] |= DOWN_POS;
                     node_queue.emplace(down_position,
                         IsCloserToFinish(node.pos.first, down_position.first, end_y) ? --new_weight : ++new_weight,
-                        node.route + "D"); //TODO(semylevy) improve this.
+                        new_route, steps, new_index); //TODO(semylevy) improve this.
                 }
             }
         }
@@ -108,9 +147,13 @@ public:
                 if (visited.find(up_position) == visited.end()) {
                     visited.emplace(up_position);
                     int new_weight = node.weight;
+                    int steps = node.step_number;
+                    bitset<MAX_SIZE> new_route = node.route;
+                    new_route <<= 2;
+                    new_route |= UP_POS;
                     node_queue.emplace(up_position,
                         IsCloserToFinish(node.pos.first, up_position.first, end_y) ? --new_weight : ++new_weight,
-                        node.route + "U"); //TODO(semylevy) improve this.
+                        new_route, ++steps); //TODO(semylevy) improve this.
                 }
             }
         }
@@ -120,9 +163,13 @@ public:
                 if (visited.find(left_position) == visited.end()) {
                     visited.emplace(left_position);
                     int new_weight = node.weight;
+                    bitset<MAX_SIZE> new_route = node.route;
+                    new_route <<= 2;
+                    new_route |= LEFT_POS;
+                    int steps = node.step_number;
                     node_queue.emplace(left_position,
                         IsCloserToFinish(node.pos.second, left_position.second, end_x) ? --new_weight : ++new_weight,
-                        node.route + "L"); //TODO(semylevy) improve this.
+                        new_route, ++steps); //TODO(semylevy) improve this.
                 }
             }
         }
@@ -132,9 +179,13 @@ public:
               if (visited.find(right_position) == visited.end()) {
                   visited.emplace(right_position);
                   int new_weight = node.weight;
+                  bitset<MAX_SIZE> new_route = node.route;
+                  int steps = node.step_number;
+                  new_route <<= 2;
+                  new_route |= RIGHT_POS;
                   node_queue.emplace(right_position,
                       IsCloserToFinish(node.pos.second, right_position.second, end_x) ? --new_weight : ++new_weight,
-                      node.route + "R"); //TODO(semylevy) improve this.
+                      new_route, steps++); //TODO(semylevy) improve this.
               }
           }
         }
