@@ -12,18 +12,9 @@ using std::pair;
 class Node{
 public:
     std::pair<int,int> pos;
-    int weight;
     string route;
-    Node(const int y, const int x, const int w, string d): pos(std::make_pair(y,x)), weight(w), route(d){}
-    Node(const pair<int,int> p, const int w, string d): pos(p), weight(w), route(d){}
+    Node(const pair<int,int> p, string d): pos(p), route(d){}
 };
-
-struct OrderByWeight{
-    bool operator() (const Node& a, const Node& b) { return a.weight < b.weight; }
-};
-
-typedef std::priority_queue<Node, std::vector<Node>, OrderByWeight> NodeQueue;
-
 
 class Labyrinth {
 public:
@@ -35,7 +26,7 @@ public:
     int end_y;
     bool** map;
     std::set<std::pair<int,int> > visited;
-    NodeQueue node_queue;
+    std::queue<Node> node_queue;
 
     Labyrinth(){
         scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
@@ -52,21 +43,9 @@ public:
         }
         if(!map[start_y][start_x]) {
             std::pair<int,int> start(start_y,start_x);
-            node_queue.emplace(start, GetDistance(start_y, start_x), "");
+            node_queue.emplace(start, "");
             visited.emplace(start);
         }
-    }
-
-    int GetDistance(int& y, int& x){
-        return (y < end_y ? end_y - y : y - end_y) + (x < end_x ? end_x - x : x - end_x);
-    }
-
-    bool IsCloserToFinish(int prev_pos, int new_pos, int end_pos) {
-      if (new_pos > prev_pos) {
-        return new_pos <= end_pos;
-      } else {
-        return new_pos >= end_pos;
-      }
     }
 
     void PrintLabyrinth(){
@@ -81,9 +60,9 @@ public:
 
     string Solve(){
         while (!node_queue.empty()){
-            Node current = node_queue.top();
+            Node current = node_queue.front();
             node_queue.pop();
-            if(current.weight == 0) return current.route;
+            if(current.pos.first == end_y && current.pos.second == end_x) return current.route;
             AddNeighborsToQueue(current);
         }
         return "-";
@@ -95,10 +74,7 @@ public:
             if(!map[down_position.first][down_position.second]) {
                 if (visited.find(down_position) == visited.end()) {
                     visited.emplace(down_position);
-                    int new_weight = node.weight;
-                    node_queue.emplace(down_position,
-                        IsCloserToFinish(node.pos.first, down_position.first, end_y) ? --new_weight : ++new_weight,
-                        node.route + "D"); //TODO(semylevy) improve this.
+                    node_queue.emplace(down_position, node.route + "D"); //TODO(semylevy) improve this.
                 }
             }
         }
@@ -107,10 +83,7 @@ public:
             if(!map[up_position.first][up_position.second]) {
                 if (visited.find(up_position) == visited.end()) {
                     visited.emplace(up_position);
-                    int new_weight = node.weight;
-                    node_queue.emplace(up_position,
-                        IsCloserToFinish(node.pos.first, up_position.first, end_y) ? --new_weight : ++new_weight,
-                        node.route + "U"); //TODO(semylevy) improve this.
+                    node_queue.emplace(up_position, node.route + "U"); //TODO(semylevy) improve this.
                 }
             }
         }
@@ -119,10 +92,7 @@ public:
             if(!map[left_position.first][left_position.second]) {
                 if (visited.find(left_position) == visited.end()) {
                     visited.emplace(left_position);
-                    int new_weight = node.weight;
-                    node_queue.emplace(left_position,
-                        IsCloserToFinish(node.pos.second, left_position.second, end_x) ? --new_weight : ++new_weight,
-                        node.route + "L"); //TODO(semylevy) improve this.
+                    node_queue.emplace(left_position, node.route + "L"); //TODO(semylevy) improve this.
                 }
             }
         }
@@ -131,10 +101,7 @@ public:
           if(!map[right_position.first][right_position.second]) {
               if (visited.find(right_position) == visited.end()) {
                   visited.emplace(right_position);
-                  int new_weight = node.weight;
-                  node_queue.emplace(right_position,
-                      IsCloserToFinish(node.pos.second, right_position.second, end_x) ? --new_weight : ++new_weight,
-                      node.route + "R"); //TODO(semylevy) improve this.
+                  node_queue.emplace(right_position, node.route + "R"); //TODO(semylevy) improve this.
               }
           }
         }
