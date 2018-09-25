@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <chrono>
+#include <stack>
 
 using std::string;
 using std::pair;
@@ -26,7 +27,7 @@ public:
     int end_y;
     bool** map;
     std::set<std::pair<int,int> > visited;
-    std::queue<Node> node_queue;
+    std::stack<Node> node_queue;
 
     Labyrinth(){
         scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
@@ -60,7 +61,7 @@ public:
 
     string Solve(){
         while (!node_queue.empty()){
-            Node current = node_queue.front();
+            Node current = node_queue.top();
             node_queue.pop();
             if(current.pos.first == end_y && current.pos.second == end_x) return current.route;
             AddNeighborsToQueue(current);
