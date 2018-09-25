@@ -11,8 +11,6 @@ using std::pair;
 
 class Node{
 public:
-    std::pair<int,int> pos;
-    int weight;
     string route;
     Node(const int y, const int x, const int w, string d): pos(std::make_pair(y,x)), weight(w), route(d){}
     Node(const pair<int,int> p, const int w, string d): pos(p), weight(w), route(d){}

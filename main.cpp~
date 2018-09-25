@@ -6,8 +6,6 @@
 #include <tuple>
 #include <chrono>
 
-#define MAX_SIZE 1500
-
 using std::string;
 using std::pair;
 
@@ -35,15 +33,16 @@ public:
     int start_x;
     int end_x;
     int end_y;
-    bool map[MAX_SIZE][MAX_SIZE]; // Space allocated in compile time to save time in run time.
+    bool** map;
     std::set<std::pair<int,int> > visited;
     NodeQueue node_queue;
-
 
     Labyrinth(){
         scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
               &end_x, &end_y);
+        map = new bool* [size_y];
         for (int i = size_y - 1; i >= 0; --i) {
+          map[i] = new bool [size_x];
             for (int j = 0; j < size_x; ++j) {
                 char cell_char;
                 scanf("%c ", &cell_char);
@@ -62,6 +61,14 @@ public:
         return (y < end_y ? end_y - y : y - end_y) + (x < end_x ? end_x - x : x - end_x);
     }
 
+    bool IsCloserToFinish(int prev_pos, int new_pos, int end_pos) {
+      if (new_pos > prev_pos) {
+        return new_pos <= end_pos;
+      } else {
+        return new_pos >= end_pos;
+      }
+    }
+
     void PrintLabyrinth(){
         for(int i = size_y - 1; i >= 0; --i){
             for(int j = 0; j < size_x; ++j){
@@ -76,6 +83,7 @@ public:
         while (!node_queue.empty()){
             Node current = node_queue.top();
             node_queue.pop();
+            std::cout << current.weight << "\n";
             if(current.weight == 0) return current.route;
             AddNeighborsToQueue(current);
         }
@@ -85,30 +93,54 @@ public:
     void AddNeighborsToQueue(const Node& node){
         if(node.pos.first > 0){
             std::pair<int,int> down_position(node.pos.first - 1, node.pos.second);
-            AddNodeIfPossible(down_position, node.route, "D");
+            if(!map[down_position.first][down_position.second]) {
+                if (visited.find(down_position) == visited.end()) {
+                    visited.emplace(down_position);
+                    int new_weight = node.weight;
+                    node_queue.emplace(down_position,
+                        IsCloserToFinish(node.pos.first, down_position.first, end_y) ? --new_weight : ++new_weight,
+                        node.route + "D"); //TODO(semylevy) improve this.
+                }
+            }
         }
-        if(node.pos.first + 1 < size_y){
+        if(node.pos.first + 1 < size_y) {
             std::pair<int,int> up_position(node.pos.first + 1, node.pos.second);
-            AddNodeIfPossible(up_position, node.route, "U");
+            if(!map[up_position.first][up_position.second]) {
+                if (visited.find(up_position) == visited.end()) {
+                    visited.emplace(up_position);
+                    int new_weight = node.weight;
+                    node_queue.emplace(up_position,
+                        IsCloserToFinish(node.pos.first, up_position.first, end_y) ? --new_weight : ++new_weight,
+                        node.route + "U"); //TODO(semylevy) improve this.
+                }
+            }
         }
         if(node.pos.second > 0){
             std::pair<int,int> left_position(node.pos.first, node.pos.second - 1);
-            AddNodeIfPossible(left_position, node.route, "L");
+            if(!map[left_position.first][left_position.second]) {
+                if (visited.find(left_position) == visited.end()) {
+                    visited.emplace(left_position);
+                    int new_weight = node.weight;
+                    node_queue.emplace(left_position,
+                        IsCloserToFinish(node.pos.second, left_position.second, end_x) ? --new_weight : ++new_weight,
+                        node.route + "L"); //TODO(semylevy) improve this.
+                }
+            }
         }
         if(node.pos.second + 1 < size_x){
-            std::pair<int,int> right_position(node.pos.first, node.pos.second + 1);
-            AddNodeIfPossible(right_position, node.route, "R");
+          std::pair<int,int> right_position(node.pos.first, node.pos.second + 1);
+          if(!map[right_position.first][right_position.second]) {
+              if (visited.find(right_position) == visited.end()) {
+                  visited.emplace(right_position);
+                  int new_weight = node.weight;
+                  node_queue.emplace(right_position,
+                      IsCloserToFinish(node.pos.second, right_position.second, end_x) ? --new_weight : ++new_weight,
+                      node.route + "R"); //TODO(semylevy) improve this.
+              }
+          }
         }
     }
 
-    void AddNodeIfPossible(pair<int,int> pos, const string& route, string new_letter){
-        if(!map[pos.first][pos.second]) {
-            if (visited.find(pos) == visited.end()) {
-                visited.emplace(pos);
-                node_queue.emplace(pos, GetDistance(pos.first, pos.second), route + new_letter); //TODO(semylevy) improve this.
-            }
-        }
-    }
 };
 
 int main() {
