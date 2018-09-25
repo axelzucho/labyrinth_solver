@@ -6,6 +6,8 @@
 #include <tuple>
 #include <chrono>
 
+#define MAX_SIZE 1500
+
 using std::string;
 using std::pair;
 
@@ -33,16 +35,15 @@ public:
     int start_x;
     int end_x;
     int end_y;
-    bool** map;
+    bool map[MAX_SIZE][MAX_SIZE]; // Space allocated in compile time to save time in run time.
     std::set<std::pair<int,int> > visited;
     NodeQueue node_queue;
+
 
     Labyrinth(){
         scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
               &end_x, &end_y);
-        map = new bool* [size_y];
         for (int i = size_y - 1; i >= 0; --i) {
-          map[i] = new bool [size_x];
             for (int j = 0; j < size_x; ++j) {
                 char cell_char;
                 scanf("%c ", &cell_char);
