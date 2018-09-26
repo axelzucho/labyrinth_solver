@@ -76,6 +76,7 @@ public:
 
     void GetSteps(const int id) {
         upside_down_result = "";
+        upside_down_result.reserve(current_id);
         int traverse = id;
         while (traverse != 0) {
             upside_down_result += (*directions.find(traverse)).second.first;
