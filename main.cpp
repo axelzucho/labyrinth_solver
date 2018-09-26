@@ -15,13 +15,14 @@ class Node {
 public:
     std::pair<int, int> pos;
     int weight;
-    int direction_id;
+    char direction;
+    Node* parent;
 
-    Node(const int y, const int x, const int w, const int id) : pos(std::make_pair(y, x)), weight(w),
-                                                                             direction_id(id) {}
+    Node(const int y, const int x, const int w, Node* dad, const char dir) : pos(std::make_pair(y, x)), weight(w), parent(dad),
+                                                                             direction(dir) {}
 
-    Node(const pair<int, int> p, const int w, const int id) : pos(p), weight(w),
-                                                                           direction_id(id) {}
+    Node(const pair<int, int> p, const int w, Node* dad, const char dir) : pos(p), weight(w), parent(dad),
+                                                                           direction(dir) {}
 
     ~Node() {}
 };
@@ -64,7 +65,7 @@ public:
         current_id = 0;
         if (!map[start_y][start_x]) {
             std::pair<int, int> start(start_y, start_x);
-            node_queue.emplace(start, GetDistance(start_y, start_x), current_id);
+            node_queue.emplace(start, GetDistance(start_y, start_x), nullptr, 'X');
             visited.emplace(start);
         }
     }
@@ -95,18 +96,18 @@ public:
         while (!node_queue.empty()) {
             Node current = node_queue.top();
             node_queue.pop();
-            if (current.weight == 0) return GetSteps(current.direction_id);
+            if (current.weight == 0) return GetSteps(&current);
             AddNeighborsToQueue(current);
         }
         upside_down_result = "-";
     }
 
-    void GetSteps(const int id) {
+    void GetSteps(Node* start) {
         upside_down_result = "";
-        int traverse = id;
-        while (traverse != 0) {
-            upside_down_result += (*directions.find(traverse)).second.first;
-            traverse = (*directions.find(traverse)).second.second;
+        Node* traverse = start;
+        while (traverse->parent != nullptr) {
+            upside_down_result += traverse->direction;
+            traverse = traverse->parent;
         }
     }
 
@@ -119,17 +120,17 @@ public:
 
     void AddNeighborsToQueue(Node &node) {
         if (node.pos.first > 0) {
+            Node* new_node;
             std::pair<int, int> down_position(node.pos.first - 1, node.pos.second);
             if (!map[down_position.first][down_position.second]) {
                 if (visited.find(down_position) == visited.end()) {
                     visited.emplace(down_position);
                     int new_weight = node.weight;
-                    Node new_node(down_position,
+                    new_node = new Node(down_position,
                                   IsCloserToFinish(node.pos.first, down_position.first, end_y) ? --new_weight
                                                                                                : ++new_weight,
-                                  ++current_id); //TODO(semylevy) improve this.
-                                  directions.insert({current_id, {'D', node.direction_id}});
-                                  node_queue.push(new_node);
+                                  &node, 'D'); //TODO(semylevy) improve this.
+                                  node_queue.push(*new_node);
                 }
             }
         }
@@ -139,12 +140,12 @@ public:
                 if (visited.find(up_position) == visited.end()) {
                     visited.emplace(up_position);
                     int new_weight = node.weight;
-                    Node new_node(up_position,
+                    Node* new_node;
+                    new_node = new Node(up_position,
                                   IsCloserToFinish(node.pos.first, up_position.first, end_y) ? --new_weight
                                                                                              : ++new_weight,
-                                  ++current_id); //TODO(semylevy) improve this.
-                    directions.insert({current_id, {'U', node.direction_id}});
-                    node_queue.push(new_node);
+                                  &node, 'U'); //TODO(semylevy) improve this.
+                    node_queue.push(*new_node);
 
                 }
             }
@@ -155,12 +156,12 @@ public:
                 if (visited.find(left_position) == visited.end()) {
                     visited.emplace(left_position);
                     int new_weight = node.weight;
-                    Node new_node(left_position,
+                    Node* new_node;
+                    new_node = new Node(left_position,
                                   IsCloserToFinish(node.pos.second, left_position.second, end_x) ? --new_weight
                                                                                                  : ++new_weight,
-                                  ++current_id); //TODO(semylevy) improve this.
-                    directions.insert({current_id, {'L', node.direction_id}});
-                    node_queue.push(new_node);
+                                  &node, 'L'); //TODO(semylevy) improve this.
+                    node_queue.push(*new_node);
                 }
             }
         }
@@ -170,12 +171,12 @@ public:
                 if (visited.find(right_position) == visited.end()) {
                     visited.emplace(right_position);
                     int new_weight = node.weight;
-                    Node new_node(right_position,
+                    Node* new_node;
+                    new_node = new Node(right_position,
                                   IsCloserToFinish(node.pos.second, right_position.second, end_x) ? --new_weight
                                                                                                   : ++new_weight,
-                                  ++current_id); //TODO(semylevy) improve this.
-                    directions.insert({current_id, {'R', node.direction_id}});
-                    node_queue.push(new_node);
+                                  &node, 'R'); //TODO(semylevy) improve this.
+                    node_queue.push(*new_node);
                 }
             }
         }
