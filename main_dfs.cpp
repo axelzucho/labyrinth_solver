@@ -6,6 +6,7 @@
 #include <tuple>
 #include <chrono>
 #include <stack>
+#include <unordered_map>
 
 using std::string;
 using std::pair;
@@ -13,8 +14,8 @@ using std::pair;
 class Node{
 public:
     std::pair<int,int> pos;
-    string route;
-    Node(const pair<int,int> p, string d): pos(p), route(d){}
+    int direction_id;
+    Node(const pair<int,int> p, const int d): pos(p), direction_id(d){}
 };
 
 class Labyrinth {
@@ -25,7 +26,10 @@ public:
     int start_x;
     int end_x;
     int end_y;
+    int current_id;
     bool** map;
+    string upside_down_result;
+    std::unordered_map<int, pair<char, int> > directions;
     std::set<std::pair<int,int> > visited;
     std::stack<Node> node_queue;
 
@@ -42,9 +46,10 @@ public:
                 else map[i][j] = false;
             }
         }
+        current_id = 0;
         if(!map[start_y][start_x]) {
             std::pair<int,int> start(start_y,start_x);
-            node_queue.emplace(start, "");
+            node_queue.emplace(start, current_id);
             visited.emplace(start);
         }
     }
@@ -59,14 +64,30 @@ public:
         }
     }
 
-    string Solve(){
+    void Solve(){
         while (!node_queue.empty()){
             Node current = node_queue.top();
             node_queue.pop();
-            if(current.pos.first == end_y && current.pos.second == end_x) return current.route;
+            if(current.pos.first == end_y && current.pos.second == end_x) return GetSteps(current.direction_id);
             AddNeighborsToQueue(current);
         }
-        return "-";
+        upside_down_result = "-";
+    }
+
+    void GetSteps(const int id) {
+        upside_down_result = "";
+        int traverse = id;
+        while (traverse != 0) {
+            upside_down_result += (*directions.find(traverse)).second.first;
+            traverse = (*directions.find(traverse)).second.second;
+        }
+    }
+
+    void PrintResult(){
+        for(int i = upside_down_result.size() - 1; i >= 0; --i){
+            printf("%c", upside_down_result[i]);
+        }
+        printf("\n");
     }
 
     void AddNeighborsToQueue(const Node& node){
@@ -75,7 +96,8 @@ public:
             if(!map[down_position.first][down_position.second]) {
                 if (visited.find(down_position) == visited.end()) {
                     visited.emplace(down_position);
-                    node_queue.emplace(down_position, node.route + "D"); //TODO(semylevy) improve this.
+                    node_queue.emplace(down_position, ++current_id); //TODO(semylevy) improve this.
+                    directions.insert({current_id, {'D', node.direction_id}});
                 }
             }
         }
@@ -84,7 +106,8 @@ public:
             if(!map[up_position.first][up_position.second]) {
                 if (visited.find(up_position) == visited.end()) {
                     visited.emplace(up_position);
-                    node_queue.emplace(up_position, node.route + "U"); //TODO(semylevy) improve this.
+                    node_queue.emplace(up_position, ++current_id); //TODO(semylevy) improve this.
+                    directions.insert({current_id, {'U', node.direction_id}});
                 }
             }
         }
@@ -93,7 +116,8 @@ public:
             if(!map[left_position.first][left_position.second]) {
                 if (visited.find(left_position) == visited.end()) {
                     visited.emplace(left_position);
-                    node_queue.emplace(left_position, node.route + "L"); //TODO(semylevy) improve this.
+                    node_queue.emplace(left_position, ++current_id); //TODO(semylevy) improve this.
+                    directions.insert({current_id, {'L', node.direction_id}});
                 }
             }
         }
@@ -102,7 +126,8 @@ public:
           if(!map[right_position.first][right_position.second]) {
               if (visited.find(right_position) == visited.end()) {
                   visited.emplace(right_position);
-                  node_queue.emplace(right_position, node.route + "R"); //TODO(semylevy) improve this.
+                  node_queue.emplace(right_position, ++current_id); //TODO(semylevy) improve this.
+                  directions.insert({current_id, {'R', node.direction_id}});
               }
           }
         }
@@ -114,8 +139,8 @@ int main() {
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     Labyrinth labyrinth;
     //labyrinth.PrintLabyrinth();
-    string solution = labyrinth.Solve();
-    std::cout << solution << "\n";
+    labyrinth.Solve();
+    labyrinth.PrintResult();
     std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
     std::cout << "Time is: " << duration << "us" << "\n";
