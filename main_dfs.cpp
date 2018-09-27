@@ -35,26 +35,27 @@ DECLARE_TIMING(o15);
 DECLARE_TIMING(o16);
 DECLARE_TIMING(o17);
 
+
 class Node{
 public:
-    std::pair<int,int> pos;
+    short int pos_x;
+    short int pos_y;
     int direction_id;
-    Node(const pair<int,int> p, const int d): pos(p), direction_id(d){}
+    Node(const short int x, const short int y, const int d): pos_x(x), pos_y(y), direction_id(d){}
 };
 
 class Labyrinth {
 public:
-    int size_y;
-    int size_x;
-    int start_y;
-    int start_x;
-    int end_x;
-    int end_y;
+    short int size_y;
+    short int size_x;
+    short int start_y;
+    short int start_x;
+    short int end_x;
+    short int end_y;
     int current_id;
     bool** map;
     std::chrono::high_resolution_clock::time_point t1;
     string upside_down_result;
-    //std::unordered_map<int, pair<char, int> > directions;
     pair<char, int>*  directions;
     bool ** visited;
     std::stack<Node> node_queue;
@@ -63,7 +64,7 @@ public:
         START_TIMING(o1);
         t1 = std::chrono::high_resolution_clock::now();
         START_TIMING(o17);
-        scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
+        scanf("%hd %hd %hd %hd %hd %hd ", &size_x, &size_y, &start_x, &start_y,
               &end_x, &end_y);
         STOP_TIMING(o17);
         map = new bool* [size_y];
@@ -85,8 +86,7 @@ public:
         }
         current_id = 0;
         if(!map[start_y][start_x]) {
-            std::pair<int,int> start(start_y,start_x);
-            node_queue.emplace(start, current_id);
+            node_queue.emplace(start_y, start_x, current_id);
             visited[start_y][start_x] = true;
         }
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -114,7 +114,7 @@ public:
             node_queue.pop();
             STOP_TIMING(o2);
             START_TIMING(o3);
-            if(current.pos.first == end_y && current.pos.second == end_x){
+            if(current.pos_y == end_y && current.pos_x == end_x){
                 return GetSteps(current.direction_id);
             }
             STOP_TIMING(o3);
@@ -152,21 +152,22 @@ public:
 
     void AddNeighborsToQueue(const Node& node){
         START_TIMING(o6);
-        if(node.pos.first > 0){
+        if(node.pos_y > 0){
             START_TIMING(o10);
-            std::pair<int,int> down_position(node.pos.first - 1, node.pos.second);
+            short int new_y_down = node.pos_y;
+            --new_y_down;
             STOP_TIMING(o10);
             START_TIMING(o11);
-            if(!map[down_position.first][down_position.second]) {
+            if(!map[new_y_down][node.pos_x]) {
                 STOP_TIMING(o11);
                 START_TIMING(o12);
-                if (!visited[down_position.first][down_position.second]) {
+                if (!visited[new_y_down][node.pos_x]) {
                     STOP_TIMING(o12);
                     START_TIMING(o13);
-                    visited[down_position.first][down_position.second] = true;
+                    visited[new_y_down][node.pos_x] = true;
                     STOP_TIMING(o13);
                     START_TIMING(o14);
-                    node_queue.emplace(down_position, ++current_id); //TODO(semylevy) improve this.
+                    node_queue.emplace(new_y_down, node.pos_x, ++current_id); //TODO(semylevy) improve this.
                     STOP_TIMING(o14);
                     START_TIMING(o15);
                     directions[current_id] = {'D', node.direction_id};
@@ -175,22 +176,23 @@ public:
             } else STOP_TIMING(o11);
         }
         STOP_TIMING(o6);
+        START_TIMING(o10);
+        short int new_y_up = node.pos_y;
+        ++new_y_up;
+        STOP_TIMING(o10);
         START_TIMING(o7);
-        if(node.pos.first + 1 < size_y) {
-            START_TIMING(o10);
-            std::pair<int,int> up_position(node.pos.first + 1, node.pos.second);
-            STOP_TIMING(o10);
+        if(new_y_up < size_y) {
             START_TIMING(o11);
-            if(!map[up_position.first][up_position.second]) {
+            if(!map[new_y_up][node.pos_x]) {
                 STOP_TIMING(o11);
                 START_TIMING(o12);
-                if (!visited[up_position.first][up_position.second]) {
+                if (!visited[new_y_up][node.pos_x]) {
                     STOP_TIMING(o12);
                     START_TIMING(o13);
-                    visited[up_position.first][up_position.second] = true;
+                    visited[new_y_up][node.pos_x] = true;
                     STOP_TIMING(o13);
                     START_TIMING(o14);
-                    node_queue.emplace(up_position, ++current_id); //TODO(semylevy) improve this.
+                    node_queue.emplace(new_y_up, node.pos_x, ++current_id);
                     STOP_TIMING(o14);
                     START_TIMING(o15);
                     directions[current_id] = {'U', node.direction_id};
@@ -200,21 +202,22 @@ public:
         }
         STOP_TIMING(o7);
         START_TIMING(o8);
-        if(node.pos.second > 0){
+        if(node.pos_x > 0){
             START_TIMING(o10);
-            std::pair<int,int> left_position(node.pos.first, node.pos.second - 1);
+            short int new_x_left = node.pos_x;
+            --new_x_left;
             STOP_TIMING(o10);
             START_TIMING(o11);
-            if(!map[left_position.first][left_position.second]) {
+            if(!map[node.pos_y][new_x_left]) {
                 STOP_TIMING(o11);
                 START_TIMING(o12);
-                if (!visited[left_position.first][left_position.second]) {
+                if (!visited[node.pos_y][new_x_left]) {
                     STOP_TIMING(o12);
                     START_TIMING(o13);
-                    visited[left_position.first][left_position.second] = true;
+                    visited[node.pos_y][new_x_left] = true;
                     STOP_TIMING(o13);
                     START_TIMING(o14);
-                    node_queue.emplace(left_position, ++current_id); //TODO(semylevy) improve this.
+                    node_queue.emplace(node.pos_y, new_x_left, ++current_id); //TODO(semylevy) improve this.
                     STOP_TIMING(o14);
                     START_TIMING(o15);
                     directions[current_id] = {'L', node.direction_id};
@@ -223,22 +226,23 @@ public:
             } else STOP_TIMING(o11);
         }
         STOP_TIMING(o8);
+        START_TIMING(o10);
+        short int new_x_right = node.pos_x;
+        ++new_x_right;
+        STOP_TIMING(o10);
         START_TIMING(o9);
-        if(node.pos.second + 1 < size_x){
-            START_TIMING(o10);
-          std::pair<int,int> right_position(node.pos.first, node.pos.second + 1);
-            STOP_TIMING(o10);
+        if(new_x_right < size_x){
             START_TIMING(o11);
-          if(!map[right_position.first][right_position.second]) {
+          if(!map[node.pos_y][new_x_right]) {
               STOP_TIMING(o11);
               START_TIMING(o12);
-              if (!visited[right_position.first][right_position.second]) {
+              if (!visited[node.pos_y][new_x_right]) {
                   STOP_TIMING(o12);
                   START_TIMING(o13);
-                  visited[right_position.first][right_position.second] = true;
+                  visited[node.pos_y][new_x_right] = true;
                   STOP_TIMING(o13);
                   START_TIMING(o14);
-                  node_queue.emplace(right_position, ++current_id); //TODO(semylevy) improve this.
+                  node_queue.emplace(node.pos_y, new_x_right, ++current_id); //TODO(semylevy) improve this.
                   STOP_TIMING(o14);
                   START_TIMING(o15);
                   directions[current_id] = {'R', node.direction_id};
