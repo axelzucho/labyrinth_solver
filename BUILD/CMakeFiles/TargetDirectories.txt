@@ -1,3 +1,0 @@
-/home/axelzucho/Documents/Github/labyrinth_solver/BUILD/CMakeFiles/edit_cache.dir
-/home/axelzucho/Documents/Github/labyrinth_solver/BUILD/CMakeFiles/rebuild_cache.dir
-/home/axelzucho/Documents/Github/labyrinth_solver/BUILD/CMakeFiles/fr.dir
