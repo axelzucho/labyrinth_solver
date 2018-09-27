@@ -115,7 +115,7 @@ public:
             if(!map[new_y_down][node.pos_x]) {
                 if (!visited[new_y_down][node.pos_x]) {
                     visited[new_y_down][node.pos_x] = true;
-                    node_queue.emplace(new_y_down, node.pos_x, ++current_id); //TODO(semylevy) improve this.
+                    node_queue.emplace(new_y_down, node.pos_x, ++current_id);
                     directions[current_id] = {'D', node.direction_id};
                 }
             }
@@ -137,7 +137,7 @@ public:
             if(!map[node.pos_y][new_x_left]) {
                 if (!visited[node.pos_y][new_x_left]) {
                     visited[node.pos_y][new_x_left] = true;
-                    node_queue.emplace(node.pos_y, new_x_left, ++current_id); //TODO(semylevy) improve this.
+                    node_queue.emplace(node.pos_y, new_x_left, ++current_id);
                     directions[current_id] = {'L', node.direction_id};
                 }
             }
@@ -148,7 +148,7 @@ public:
             if(!map[node.pos_y][new_x_right]) {
                 if (!visited[node.pos_y][new_x_right]) {
                     visited[node.pos_y][new_x_right] = true;
-                    node_queue.emplace(node.pos_y, new_x_right, ++current_id); //TODO(semylevy) improve this.
+                    node_queue.emplace(node.pos_y, new_x_right, ++current_id);
                     directions[current_id] = {'R', node.direction_id};
                 }
             }
