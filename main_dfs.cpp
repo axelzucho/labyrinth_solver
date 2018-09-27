@@ -32,6 +32,8 @@ DECLARE_TIMING(o12);
 DECLARE_TIMING(o13);
 DECLARE_TIMING(o14);
 DECLARE_TIMING(o15);
+DECLARE_TIMING(o16);
+DECLARE_TIMING(o17);
 
 class Node{
 public:
@@ -52,27 +54,34 @@ public:
     bool** map;
     std::chrono::high_resolution_clock::time_point t1;
     string upside_down_result;
-    std::unordered_map<int, pair<char, int> > directions;
+    //std::unordered_map<int, pair<char, int> > directions;
+    pair<char, int>*  directions;
     bool ** visited;
     std::stack<Node> node_queue;
 
     Labyrinth(){
         START_TIMING(o1);
         t1 = std::chrono::high_resolution_clock::now();
+        START_TIMING(o17);
         scanf("%d %d %d %d %d %d ", &size_x, &size_y, &start_x, &start_y,
               &end_x, &end_y);
+        STOP_TIMING(o17);
         map = new bool* [size_y];
         visited = new bool* [size_y];
+        int size = size_y*(size_x+1);
+        char* all_chars = new char [size];
+        fread(all_chars, 1, size, stdin);
+        //printf("%s", all_chars);
+        char* iterating = all_chars;
         for (int i = size_y - 1; i >= 0; --i) {
           map[i] = new bool [size_x];
           visited[i] = new bool [size_x];
             for (int j = 0; j < size_x; ++j) {
-                char cell_char;
-                scanf("%c ", &cell_char);
-                if(cell_char == '1') map[i][j] = true;
+                if(*(iterating++) == '1') map[i][j] = true;
                 else map[i][j] = false;
                 visited[i][j] = false;
             }
+            ++iterating;
         }
         current_id = 0;
         if(!map[start_y][start_x]) {
@@ -83,6 +92,7 @@ public:
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
         std::cout << "Initialization time is: " << duration << "us" << "\n";
+        directions = new pair<char, int> [(size_x*size_y)/2];
         t1 = std::chrono::high_resolution_clock::now();
         STOP_TIMING(o1);
     }
@@ -121,17 +131,19 @@ public:
         upside_down_result.reserve(current_id);
         int traverse = id;
         while (traverse != 0) {
-            upside_down_result += (*directions.find(traverse)).second.first;
-            traverse = (*directions.find(traverse)).second.second;
+            upside_down_result += directions[traverse].first;
+            traverse = directions[traverse].second;
         }
         STOP_TIMING(o4);
     }
 
     void PrintResult(){
+        START_TIMING(o16);
         //t1 = std::chrono::high_resolution_clock::now();
         for(int i = upside_down_result.size() - 1; i >= 0; --i){
             printf("%c", upside_down_result[i]);
         }
+        STOP_TIMING(o16);
         printf("\n");
         /*std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
@@ -157,7 +169,7 @@ public:
                     node_queue.emplace(down_position, ++current_id); //TODO(semylevy) improve this.
                     STOP_TIMING(o14);
                     START_TIMING(o15);
-                    directions.insert({current_id, {'D', node.direction_id}});
+                    directions[current_id] = {'D', node.direction_id};
                     STOP_TIMING(o15);
                 } else STOP_TIMING(o12);
             } else STOP_TIMING(o11);
@@ -181,7 +193,7 @@ public:
                     node_queue.emplace(up_position, ++current_id); //TODO(semylevy) improve this.
                     STOP_TIMING(o14);
                     START_TIMING(o15);
-                    directions.insert({current_id, {'U', node.direction_id}});
+                    directions[current_id] = {'U', node.direction_id};
                     STOP_TIMING(o15);
                 } else STOP_TIMING(o12);
             } else STOP_TIMING(o11);
@@ -205,7 +217,7 @@ public:
                     node_queue.emplace(left_position, ++current_id); //TODO(semylevy) improve this.
                     STOP_TIMING(o14);
                     START_TIMING(o15);
-                    directions.insert({current_id, {'L', node.direction_id}});
+                    directions[current_id] = {'L', node.direction_id};
                     STOP_TIMING(o15);
                 } else STOP_TIMING(o12);
             } else STOP_TIMING(o11);
@@ -229,7 +241,7 @@ public:
                   node_queue.emplace(right_position, ++current_id); //TODO(semylevy) improve this.
                   STOP_TIMING(o14);
                   START_TIMING(o15);
-                  directions.insert({current_id, {'R', node.direction_id}});
+                  directions[current_id] = {'R', node.direction_id};
                   STOP_TIMING(o15);
               } else STOP_TIMING(o12);
           } else STOP_TIMING(o11);
@@ -244,7 +256,7 @@ int main() {
     Labyrinth labyrinth;
     //labyrinth.PrintLabyrinth();
     labyrinth.Solve();
-    //labyrinth.PrintResult();
+    labyrinth.PrintResult();
     std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
     std::cout << "Time is: " << duration << "us" << "\n";
@@ -263,4 +275,6 @@ int main() {
     SHOW_TIMING(o13, "o13:");
     SHOW_TIMING(o14, "o14:");
     SHOW_TIMING(o15, "o15:");
+    SHOW_TIMING(o16, "o16:");
+    SHOW_TIMING(o17, "o17:");
 }
