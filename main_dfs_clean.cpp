@@ -11,6 +11,8 @@
 #include <chrono>
 #include <stack>
 #include <unordered_map>
+#include <bits/stdc++.h>
+
 
 using std::string;
 using std::pair;
@@ -158,12 +160,14 @@ public:
 };
 
 int main() {
-    //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     Labyrinth labyrinth;
     //labyrinth.PrintLabyrinth();
     labyrinth.Solve();
     labyrinth.PrintResult();
-    //std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
-    //std::cout << "Time is: " << duration << "us" << "\n";
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    std::cout << "Time is: " << duration << "us" << "\n";
 }

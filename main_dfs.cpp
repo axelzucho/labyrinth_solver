@@ -4,13 +4,11 @@
 
 #include <iostream>
 #include <stdio.h>
-#include <set>
 #include <queue>
 #include <string>
 #include <tuple>
 #include <chrono>
 #include <stack>
-#include <unordered_map>
 #include "timing.h"
 #include <opencv2/opencv.hpp>
 
@@ -34,14 +32,17 @@ DECLARE_TIMING(o14);
 DECLARE_TIMING(o15);
 DECLARE_TIMING(o16);
 DECLARE_TIMING(o17);
+DECLARE_TIMING(Xchange);
+DECLARE_TIMING(Ychange);
 
 
 class Node{
 public:
     short int pos_x;
     short int pos_y;
+    bool* map_position;
     int direction_id;
-    Node(const short int x, const short int y, const int d): pos_x(x), pos_y(y), direction_id(d){}
+    Node(const short int y, const short int x, const int d): pos_y(y), pos_x(x), direction_id(d){}
 };
 
 class Labyrinth {
@@ -157,9 +158,9 @@ public:
             short int new_y_down = node.pos_y;
             --new_y_down;
             STOP_TIMING(o10);
-            START_TIMING(o11);
+            START_TIMING(Ychange);
             if(!map[new_y_down][node.pos_x]) {
-                STOP_TIMING(o11);
+                STOP_TIMING(Ychange);
                 START_TIMING(o12);
                 if (!visited[new_y_down][node.pos_x]) {
                     STOP_TIMING(o12);
@@ -182,9 +183,9 @@ public:
         STOP_TIMING(o10);
         START_TIMING(o7);
         if(new_y_up < size_y) {
-            START_TIMING(o11);
+            START_TIMING(Ychange);
             if(!map[new_y_up][node.pos_x]) {
-                STOP_TIMING(o11);
+                STOP_TIMING(Ychange);
                 START_TIMING(o12);
                 if (!visited[new_y_up][node.pos_x]) {
                     STOP_TIMING(o12);
@@ -207,9 +208,9 @@ public:
             short int new_x_left = node.pos_x;
             --new_x_left;
             STOP_TIMING(o10);
-            START_TIMING(o11);
+            START_TIMING(Xchange);
             if(!map[node.pos_y][new_x_left]) {
-                STOP_TIMING(o11);
+                STOP_TIMING(Xchange);
                 START_TIMING(o12);
                 if (!visited[node.pos_y][new_x_left]) {
                     STOP_TIMING(o12);
@@ -232,9 +233,9 @@ public:
         STOP_TIMING(o10);
         START_TIMING(o9);
         if(new_x_right < size_x){
-            START_TIMING(o11);
+            START_TIMING(Xchange);
           if(!map[node.pos_y][new_x_right]) {
-              STOP_TIMING(o11);
+              STOP_TIMING(Xchange);
               START_TIMING(o12);
               if (!visited[node.pos_y][new_x_right]) {
                   STOP_TIMING(o12);
@@ -256,6 +257,8 @@ public:
 };
 
 int main() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     Labyrinth labyrinth;
     //labyrinth.PrintLabyrinth();
@@ -281,4 +284,6 @@ int main() {
     SHOW_TIMING(o15, "o15:");
     SHOW_TIMING(o16, "o16:");
     SHOW_TIMING(o17, "o17:");
+    SHOW_TIMING(Xchange, "Xchange:");
+    SHOW_TIMING(Ychange, "Ychange:");
 }
